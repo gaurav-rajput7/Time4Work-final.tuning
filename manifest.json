@@ -1,0 +1,24 @@
+{
+  "background_color": "#211b4b",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Time4Work",
+  "orientation": "portrait",
+  "scope": "/",
+  "short_name": "T4W",
+  "start_url": "/",
+  "theme_color": "#8276cf",
+  "description": "Time4Work is an all-in-one technical &amp; non- technical productivity app designed to help users plan focused work, build consistent habits, manage study schedules, track goals, and improve productivity.",
+  "id": "/",
+  "lang": "en",
+  "categories": [
+    "productivity"
+  ],
+  "shortcuts": [
+    {
+      "name": "t4w",
+      "url": null,
+      "description": null
+    }
+  ]
+}
