@@ -1,24 +1,20 @@
 {
-  "background_color": "#211b4b",
-  "dir": "ltr",
-  "display": "standalone",
   "name": "Time4Work",
-  "orientation": "portrait",
-  "scope": "/",
-  "short_name": "T4W",
-  "start_url": "/",
-  "theme_color": "#8276cf",
-  "description": "Time4Work is an all-in-one technical &amp; non- technical productivity app designed to help users plan focused work, build consistent habits, manage study schedules, track goals, and improve productivity.",
+  "short_name": "Time4Work",
+  "description": "Study Sprint, Breathing aur Roadmap — focus ke saath padhai.",
   "id": "/",
-  "lang": "en",
-  "categories": [
-    "productivity"
-  ],
-  "shortcuts": [
-    {
-      "name": "t4w",
-      "url": null,
-      "description": null
-    }
+  "start_url": "./index.html",
+  "scope": "./",
+  "display_override": ["fullscreen", "standalone"],
+  "display": "standalone",
+  "orientation": "any",
+  "lang": "hi",
+  "background_color": "#1b1544",
+  "theme_color": "#1b1544",
+  "categories": ["education", "productivity"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }
