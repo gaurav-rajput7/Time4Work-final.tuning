@@ -1,0 +1,25 @@
+{
+  "name": "time4work",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --hostname 0.0.0.0",
+    "build": "next build",
+    "start": "next start --hostname 0.0.0.0"
+  },
+  "dependencies": {
+    "@neondatabase/auth": "latest",
+    "drizzle-orm": "latest",
+    "jose": "latest",
+    "next": "latest",
+    "pg": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@types/pg": "latest",
+    "@types/react": "latest",
+    "typescript": "latest"
+  }
+}
