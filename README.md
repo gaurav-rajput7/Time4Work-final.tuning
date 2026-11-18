@@ -6,7 +6,7 @@ Time4Work is a study and productivity app for planning focused work, building ha
 
 - **Roadmap** — organize study topics and projects into phases and track completion.
 - **Focus** — run study sprints, guided breathing timers, and Pomodoro-style focus and break sessions.
-- **Tasks and planner** — manage priorities, due dates, recurring tasks, subtasks, and calendar events.
+- **Tasks and planner** — manage priorities, due dates, recurring tasks and events, subtasks, browser reminders, and standard iCalendar (`.ics`) import/export.
 - **Habits** — track scheduled check-ins and streaks alongside breathing exercises.
 - **Goals** — break goals into milestones and view daily study time in the target calendar.
 - **Notes and reminders** — keep notes and review upcoming or overdue tasks, events, and goals.
@@ -16,31 +16,24 @@ Time4Work is a study and productivity app for planning focused work, building ha
 
 ## Run locally
 
-The app is static HTML, CSS, and JavaScript. No build step or package installation is needed. Run it from a local web server because service workers require `localhost` or HTTPS:
+Time4Work runs on Next.js and uses the connected Neon database and Neon Auth service.
 
 ```bash
-python -m http.server 8000
+npm install
+npm run dev
 ```
 
-If `python` is not available, try `python3 -m http.server 8000`. Then open [http://localhost:8000](http://localhost:8000).
-
-## Deploy with GitHub Pages
-
-1. Push the project files to a GitHub repository.
-2. In the repository, open **Settings → Pages**.
-3. Under **Build and deployment**, choose **Deploy from a branch**.
-4. Select the `main` branch and `/ (root)` folder, then save.
-5. Open the published URL shown in the Pages settings. PWA installation and service workers require HTTPS; GitHub Pages provides HTTPS.
-
-The project can also be hosted using another static hosting service that supports HTTPS.
+Open [http://localhost:3000](http://localhost:3000). Configure `DATABASE_URL` and `NEON_AUTH_BASE_URL` for a self-hosted deployment; the connected Vercel project supplies these values in its environment.
 
 ## Project files
 
-- `index.html` — app interface, styles, and application logic.
-- `manifest.webmanifest` — PWA metadata and install icons.
-- `sw.js` — service worker that caches the app shell and assets.
-- `icons/` — app and install icons.
+- `app/` — Next.js sign-in shell, page metadata, and authenticated state API.
+- `components/app-shell.tsx` — Neon Auth sign-in and the synced app workspace.
+- `public/index.html` — existing Time4Work interface, now backed by the authenticated cloud-state bridge.
+- `public/calendar.js` — iCalendar import/export helpers.
+- `public/sw.js` and `public/manifest.webmanifest` — PWA install and offline app-shell support.
+- `lib/db/` — Drizzle schema and Neon connection.
 
 ## Data and accounts
 
-App data and locally created account information are stored in the browser on the current device. There is no server-side account service or automatic synchronization between browsers or devices. Clearing the browser's site data may remove this information.
+Sign in with the connected Neon Auth service to keep your roadmap, tasks, habits, goals, notes, events, settings, profile, and progress in Neon. Each API request verifies the signed Neon Auth token and scopes reads and writes to that authenticated user. Local data from the previous browser-only account can be imported into the matching signed-in account on first sync. JSON backup and restore remain available in Settings.

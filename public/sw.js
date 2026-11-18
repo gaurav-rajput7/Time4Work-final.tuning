@@ -1,9 +1,10 @@
 const CACHE_PREFIX = "time4work-";
-const CACHE = "time4work-v22";
+const CACHE = "time4work-v25";
 const APP_BASE = new URL("./", self.location.href);
-const ASSETS = ["./", "./index.html", "./manifest.webmanifest",
+const ASSETS = ["./index.html", "./calendar.js", "./manifest.webmanifest",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/maskable-512.png",
   "./icons/apple-touch-icon.png"];
+const CACHED_ASSETS = new Set(ASSETS.map(asset => new URL(asset, APP_BASE).href));
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
@@ -22,7 +23,7 @@ self.addEventListener("notificationclick", e => {
 });
 self.addEventListener("fetch", e => {
   const url = new URL(e.request.url);
-  if (e.request.method !== "GET" || url.origin !== APP_BASE.origin || !url.href.startsWith(APP_BASE.href)) return;
+  if (e.request.method !== "GET" || !CACHED_ASSETS.has(url.href)) return;
   const response = caches.open(CACHE).then(cache => cache.match(e.request).then(hit => {
     if (hit) return hit;
     return fetch(e.request).then(res => {
