@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "time4work-";
-const CACHE = "time4work-v21";
+const CACHE = "time4work-v22";
 const APP_BASE = new URL("./", self.location.href);
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/maskable-512.png",
@@ -12,6 +12,13 @@ self.addEventListener("activate", e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(
     ks.filter(k => k.startsWith(CACHE_PREFIX) && k !== CACHE).map(k => caches.delete(k))
   )).then(() => self.clients.claim()));
+});
+self.addEventListener("notificationclick", e => {
+  e.notification.close();
+  e.waitUntil(clients.matchAll({ type: "window", includeUncontrolled: true }).then(windows => {
+    const app = windows.find(client => new URL(client.url).origin === APP_BASE.origin && client.url.startsWith(APP_BASE.href));
+    return app ? app.focus() : clients.openWindow(APP_BASE.href);
+  }));
 });
 self.addEventListener("fetch", e => {
   const url = new URL(e.request.url);
