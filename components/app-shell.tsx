@@ -12,6 +12,7 @@ type CloudBridge = {
   signOut: () => Promise<void>;
 };
 type AuthClient = ReturnType<typeof createTime4WorkAuthClient>;
+type AuthFeedback = { kind: "error" | "status"; text: string };
 
 declare global {
   interface Window {
@@ -38,7 +39,7 @@ export function AppShell({ authBaseUrl, initialUser }: { authBaseUrl: string; in
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
+  const [feedback, setFeedback] = useState<AuthFeedback | null>(null);
   const [busy, setBusy] = useState(false);
   const [bridgeReady, setBridgeReady] = useState(false);
 
@@ -77,11 +78,12 @@ export function AppShell({ authBaseUrl, initialUser }: { authBaseUrl: string; in
   }, [user, authClient]);
 
   async function signOutUser() {
+    setFeedback(null);
     const frame = document.querySelector<HTMLIFrameElement>('iframe[title="Time4Work workspace"]');
     try {
       await frame?.contentWindow?.time4workFlush?.();
     } catch {
-      setMessage("Some recent changes could not be synced. Stay signed in and try again.");
+      setFeedback({ kind: "error", text: "Some recent changes could not be synced. Stay signed in and try again." });
       return;
     }
 
@@ -91,24 +93,36 @@ export function AppShell({ authBaseUrl, initialUser }: { authBaseUrl: string; in
       if (authClient) await authClient.signOut().catch(() => undefined);
       setUser(null);
     } catch {
-      setMessage("Sign out failed. Please try again.");
+      setFeedback({ kind: "error", text: "Sign out failed. Please try again." });
     }
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setMessage("");
+    setFeedback(null);
+    const signingUp = mode === "sign-up";
     if (!authClient) {
-      setMessage("Secure sign-in is not configured for this deployment.");
+      setFeedback({ kind: "error", text: "Secure sign-in is not configured for this deployment." });
       return;
     }
     setBusy(true);
+    let accountCreated = false;
 
     try {
-      const result = mode === "sign-up"
+      const result = signingUp
         ? await authClient.signUp.email({ email: email.trim().toLowerCase(), password, name: name.trim() })
         : await authClient.signIn.email({ email: email.trim().toLowerCase(), password });
-      if (result.error) throw new Error("Sign-in failed");
+      if (result.error) {
+        setFeedback({
+          kind: "error",
+          text: signingUp
+            ? "We couldn’t create your account. Check your details; if you’ve already registered, try signing in."
+            : "We couldn’t sign in. Check your email and password, then try again.",
+        });
+        return;
+      }
+
+      accountCreated = signingUp;
       const session = await getNeonSession(authClient);
       const response = await fetch("/api/session", {
         method: "POST",
@@ -118,7 +132,17 @@ export function AppShell({ authBaseUrl, initialUser }: { authBaseUrl: string; in
       if (!response.ok) throw new Error("Session verification failed");
       setUser(session.user);
     } catch {
-      setMessage("We couldn’t complete sign-in. Check your details and try again.");
+      setFeedback(accountCreated
+        ? {
+            kind: "status",
+            text: "Your account was created, but automatic sign-in didn’t finish. If email verification is requested, check your inbox, then try signing in.",
+          }
+        : {
+            kind: "error",
+            text: signingUp
+              ? "We couldn’t create your account. Check your details; if you’ve already registered, try signing in."
+              : "We couldn’t sign in. Check your email and password, then try again.",
+          });
     } finally {
       setBusy(false);
     }
@@ -145,6 +169,7 @@ export function AppShell({ authBaseUrl, initialUser }: { authBaseUrl: string; in
             <button className="signout" type="button" onClick={() => void signOutUser()}>Sign out</button>
           </div>
         </header>
+        {feedback && <p className="workspace-feedback" role={feedback.kind === "status" ? "status" : "alert"}>{feedback.text}</p>}
         {bridgeReady ? <iframe title="Time4Work workspace" src="/index.html" /> : <div className="auth-shell"><section className="auth-card loading-card">Preparing your workspace…</section></div>}
       </main>
     );
@@ -166,8 +191,8 @@ export function AppShell({ authBaseUrl, initialUser }: { authBaseUrl: string; in
           <label>Password<input type="password" autoComplete={signingUp ? "new-password" : "current-password"} minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} required /></label>
           <button className="auth-submit" type="submit" disabled={busy}>{busy ? "Please wait…" : signingUp ? "Create account" : "Sign in"}</button>
         </form>
-        <p className="auth-message" role="alert">{message}</p>
-        <button className="auth-switch" type="button" onClick={() => { setMode(signingUp ? "sign-in" : "sign-up"); setMessage(""); }}>
+        <p className="auth-message" role={feedback?.kind === "status" ? "status" : "alert"}>{feedback?.text ?? ""}</p>
+        <button className="auth-switch" type="button" onClick={() => { setMode(signingUp ? "sign-in" : "sign-up"); setFeedback(null); }}>
           {signingUp ? "Already have an account? Sign in" : "New to Time4Work? Create an account"}
         </button>
         <div className="sync-note"><span className="sync-dot" aria-hidden="true" />Secure sign-in · Private, account-scoped sync</div>
